@@ -52,8 +52,7 @@ public class SecurityConfig {
                  * de autenticação.
                  */
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/**").permitAll()
-                        .anyRequest().authenticated() // Para qualquer outra requisição, exija autenticação (voltaremos nisso)
+                        .anyRequest().permitAll()
                 );
 
         return http.build();

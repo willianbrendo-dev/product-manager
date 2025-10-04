@@ -33,4 +33,20 @@ public class ProductService {
                         HttpStatus.NOT_FOUND, "Produto não encontrado com id: " + id
                 ));
     }
+
+    public Product update(Long id, Product updatedProduct) {
+        Product existingProduct = findById(id); // já lança 404 se não existir
+
+        // Atualiza apenas os campos necessários
+        existingProduct.setName(updatedProduct.getName());
+        existingProduct.setPrice(updatedProduct.getPrice());
+        existingProduct.setQuantity(updatedProduct.getQuantity());
+
+        return productRepository.save(existingProduct);
+    }
+
+    public void delete(Long id) {
+        Product existingProduct = findById(id); // se não achar, lança 404
+        productRepository.delete(existingProduct);
+    }
 }
