@@ -4,6 +4,7 @@ import com.wb.product_manager.domain.Product;
 import com.wb.product_manager.service.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class ProductController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ANALISTA', 'SUPERVISOR')")
     public ResponseEntity<Product> create(@RequestBody Product product) {
         Product createdProduct = productService.create(product);
 
@@ -40,24 +42,28 @@ public class ProductController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ANALISTA', 'SUPERVISOR')")
     public ResponseEntity<List<Product>> findAll() {
         List<Product> products = productService.findAll();
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ANALISTA', 'SUPERVISOR')")
     public ResponseEntity<Product> findById(@PathVariable Long id) {
         Product product = productService.findById(id);
         return ResponseEntity.ok(product);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ANALISTA', 'SUPERVISOR')")
     public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody Product product) {
         Product updated = productService.update(id, product);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('SUPERVISOR')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         productService.delete(id);
         return ResponseEntity.noContent().build(); // 204 No Content

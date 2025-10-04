@@ -1,11 +1,19 @@
 package com.wb.product_manager.config;
 
+import com.wb.product_manager.config.security.JwtAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * @Configuration: Indica ao Spring que esta é uma classe de configuração.
@@ -17,7 +25,11 @@ import org.springframework.security.web.SecurityFilterChain;
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
+
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     /**
      * @Bean: Esta anotação diz ao Spring: "Aqui está a receita para criar um objeto
@@ -35,26 +47,25 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                /**
-                 * CSRF (Cross-Site Request Forgery) é um tipo de ataque.
-                 * Como nossa API será stateless (não usará sessões) e a autenticação
-                 * será via token, podemos desabilitar essa proteção com segurança.
-                 */
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                /**
-                 * authorizeHttpRequests: É aqui que definimos as regras de autorização.
-                 * .requestMatchers("/api/**"): Estamos especificando o padrão de URL.
-                 * O "/api/**" significa: "qualquer URL que comece com /api/".
-                 * .permitAll(): Estamos dizendo que para as URLs que correspondem ao
-                 * padrão acima, o acesso é permitido para todos, sem necessidade
-                 * de autenticação.
-                 */
-                .authorizeHttpRequests(authorize -> authorize
-                        .anyRequest().permitAll()
-                );
-
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authorize -> authorize
+                    // Nossos endpoints de autenticação são públicos
+                    .requestMatchers("/api/auth/**").permitAll()
+                    // Todos os outros endpoints exigem autenticação
+                    .anyRequest().authenticated()
+            );
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }
