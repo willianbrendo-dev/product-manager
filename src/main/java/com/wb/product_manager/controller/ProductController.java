@@ -4,10 +4,10 @@ import com.wb.product_manager.domain.Product;
 import com.wb.product_manager.service.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @RestController: Esta é uma anotação especializada do Spring que combina duas outras:
@@ -37,5 +37,17 @@ public class ProductController {
         Product createdProduct = productService.create(product);
 
         return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Product>> findAll() {
+        List<Product> products = productService.findAll();
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Product> findById(@PathVariable Long id) {
+        Product product = productService.findById(id);
+        return ResponseEntity.ok(product);
     }
 }
